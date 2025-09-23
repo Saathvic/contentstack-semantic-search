@@ -1,0 +1,17 @@
+# Railway deployment configuration
+build:
+  builder: nixpacks
+services:
+  backend:
+    build:
+      buildCommand: pip install -r requirements.txt
+      startCommand: python webhook.py
+    envVars:
+      - PORT=${{ PORT }}
+      - CONTENTSTACK_API_KEY=${{ CONTENTSTACK_API_KEY }}
+      - CONTENTSTACK_DELIVERY_TOKEN=${{ CONTENTSTACK_DELIVERY_TOKEN }}
+      - CONTENTSTACK_ENVIRONMENT=${{ CONTENTSTACK_ENVIRONMENT }}
+      - PINECONE_API_KEY=${{ PINECONE_API_KEY }}
+      - PINECONE_INDEX_NAME=${{ PINECONE_INDEX_NAME }}
+      - GEMINI_API_KEY=${{ GEMINI_API_KEY }}
+      - HUGGINGFACE_API_TOKEN=${{ HUGGINGFACE_API_TOKEN }}

@@ -68,7 +68,15 @@ def add_cors_headers(response):
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
     return response
-CORS(app, origins=["http://localhost:3000", "http://localhost:3001", "http://192.168.1.14:3000", "http://192.168.1.14:3001", f"https://{config.NGROK_FRONTEND_DOMAIN}"])  # Enable CORS for React dev server
+CORS(app, origins=[
+    "http://localhost:3000", 
+    "http://localhost:3001", 
+    "http://192.168.1.14:3000", 
+    "http://192.168.1.14:3001", 
+    f"https://{config.NGROK_FRONTEND_DOMAIN}",
+    "https://contentstack-semantic-search-71c585.eu-contentstackapps.com",
+    "https://*.eu-contentstackapps.com"
+])  # Enable CORS for React dev server and Contentstack Launch
 
 # Global managers
 _pinecone_manager = None
