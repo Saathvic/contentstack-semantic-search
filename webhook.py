@@ -346,6 +346,7 @@ if __name__ == "__main__":
         logger.warning("⚠️ Webhooks will NOT work without ngrok tunnel!")
     
     try:
-        app.run(port=config.FLASK_PORT, debug=config.FLASK_DEBUG, host='0.0.0.0')
+        port = int(os.environ.get("PORT", config.FLASK_PORT))
+        app.run(port=port, debug=config.FLASK_DEBUG, host='0.0.0.0')
     except KeyboardInterrupt:
         print("Shutting down Flask app...")
