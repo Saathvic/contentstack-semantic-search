@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@contentstack/marketplace-sdk": "^1.4.0",
+    "axios": "^1.12.2"
+  }
+}

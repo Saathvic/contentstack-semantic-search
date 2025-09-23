@@ -1,0 +1,45 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+.env.development
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+logs/
+*.log
+
+# Cache
+*.cache
+embedding_cache.json
+embedding_result.json
+product_embeddings*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node.js (for React app)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Ngrok
+ngrok.exe

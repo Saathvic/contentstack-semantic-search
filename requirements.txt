@@ -1,0 +1,26 @@
+# Python dependencies for Contentstack Semantic Search
+
+# Web Framework
+Flask==3.0.0
+
+# CORS
+Flask-CORS==4.0.0
+
+# HTTP Requests
+requests==2.31.0
+
+# Machine Learning & Embeddings
+sentence-transformers==2.7.0
+numpy>=1.25.0
+
+# Vector Database
+pinecone-client==4.1.0
+
+# LLM Integration
+google-generativeai==0.6.0
+
+# Ngrok Integration
+pyngrok==7.1.1
+
+# Development
+python-dotenv==1.0.0

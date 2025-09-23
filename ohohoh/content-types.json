@@ -1,0 +1,20 @@
+[
+  {
+    "title": "Product",
+    "uid": "product",
+    "schema": [
+      {
+        "display_name": "Title",
+        "uid": "title",
+        "data_type": "text",
+        "mandatory": true
+      },
+      {
+        "display_name": "Description",
+        "uid": "description",
+        "data_type": "text",
+        "mandatory": false
+      }
+    ]
+  }
+]

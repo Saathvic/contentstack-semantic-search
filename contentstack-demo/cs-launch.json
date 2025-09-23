@@ -1,0 +1,12 @@
+{
+  "project": {
+    "name": "contentstack-semantic-search",
+    "projectType": "GITHUB",
+    "environments": [
+      {
+        "name": "development",
+        "frameworkPreset": "CRA"
+      }
+    ]
+  }
+}
