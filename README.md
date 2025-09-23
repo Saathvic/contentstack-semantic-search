@@ -1,15 +1,21 @@
 # Contentstack Semantic Search
 
-A comprehensive semantic search system for Contentstack CMS that uses embeddings, vector databases, and LLM-powered query expansion to provide intelligent content discovery.
+🚀 **Production Ready!** - A sophisticated semantic search application with glassmorphism UI, now deployed on GitHub and ready for Contentstack Launch.
 
-## 🎯 Features
+This project provides semantic, embeddings-based search across Contentstack CMS content using sentence-transformers, Pinecone vector database, and real-time synchronization via webhooks.
 
-- **Real-time Content Sync**: Automatic indexing via Contentstack webhooks
-- **Semantic Search**: AI-powered search using sentence embeddings
-- **Query Expansion**: LLM-enhanced query rewriting for better recall
-- **Vector Database**: Scalable similarity search with Pinecone
-- **Modern Frontend**: React-based search interface
-- **Production Ready**: Comprehensive configuration and error handling
+## � Features
+- **Semantic Search**: Advanced embeddings-based search using sentence-transformers
+- **Real-time Sync**: Instant content synchronization via Contentstack webhooks  
+- **Vector Database**: High-performance similarity search with Pinecone
+- **Query Expansion**: Enhanced recall using Gemini LLM for query rewriting
+- **Glassmorphism UI**: Beautiful, modern React frontend with frosted glass effects
+- **Production Ready**: Fully tested and deployed with security best practices
+
+## 🎯 Live Demo
+
+- **GitHub Repository**: [https://github.com/Saathvic/contentstack-semantic-search](https://github.com/Saathvic/contentstack-semantic-search)
+- **Contentstack Launch**: Ready for deployment (see deployment section)
 
 ## 🏗️ Architecture
 
