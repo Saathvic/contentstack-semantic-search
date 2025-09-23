@@ -9,8 +9,8 @@ function SearchInterface() {
   const [error, setError] = useState('');
   const [expandedQueries, setExpandedQueries] = useState([]);
 
-  // Use the ngrok domain or localhost for development
-  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  // Force localhost for development (debugging CORS)
+  const API_BASE_URL = 'http://localhost:5000';
 
   const handleSearch = async (e) => {
     e.preventDefault();
