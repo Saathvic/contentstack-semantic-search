@@ -12,6 +12,21 @@ function SearchInterface() {
   // Production API URL for Launch integration
   const API_BASE_URL = 'https://contentstack-semantic-search-0qhl.onrender.com';
 
+  // Warmup the backend service
+  const warmupService = async () => {
+    try {
+      await axios.get(`${API_BASE_URL}/health`, { timeout: 10000 });
+      console.log('✅ Backend service is ready');
+    } catch (err) {
+      console.log('⚠️ Backend service may be starting up');
+    }
+  };
+
+  // Warmup on component mount
+  React.useEffect(() => {
+    warmupService();
+  }, []);
+
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -22,17 +37,33 @@ function SearchInterface() {
     setExpandedQueries([]);
 
     try {
+      // Extended timeout for cold starts
       const response = await axios.post(`${API_BASE_URL}/search`, {
         query: query,
         top_k: 10,
         rewrite: true
+      }, {
+        timeout: 90000, // 90 second timeout for cold starts
+        headers: {
+          'Content-Type': 'application/json'
+        }
       });
 
       setResults(response.data.results || []);
       setExpandedQueries(response.data.expanded_queries || []);
+      
+      // Show message if using demo mode
+      if (response.data.status === 'demo_mode') {
+        setError(`🔄 ${response.data.message || 'Using demo results while search initializes'}`);
+      }
+      
     } catch (err) {
       console.error('Search error:', err);
-      setError(err.response?.data?.error || 'Search failed. Please try again.');
+      if (err.code === 'ECONNABORTED') {
+        setError('⏱️ Search is taking longer than usual. The service may be starting up. Please try again in a moment.');
+      } else {
+        setError(err.response?.data?.error || err.response?.data?.message || 'Search failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -76,7 +107,7 @@ function SearchInterface() {
               className="search-button"
               disabled={loading || !query.trim()}
             >
-              {loading ? '🔄 Searching...' : '🔍 Search'}
+              {loading ? '🔄 Searching... (may take up to 60s on first search)' : '🔍 Search'}
             </button>
           </div>
         </form>
@@ -91,8 +122,8 @@ function SearchInterface() {
       </div>
 
       {error && (
-        <div className="error-message">
-          ❌ {error}
+        <div className={error.includes('🔄') ? "info-message" : "error-message"}>
+          {error}
         </div>
       )}
 
