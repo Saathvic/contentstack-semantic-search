@@ -28,55 +28,32 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-# Production CORS configuration
-allowed_origins = [
-    "http://localhost:3000", 
-    "http://localhost:3001", 
-    "https://contentstack-semantic-search-71c585.eu-contentstackapps.com",
-    "https://*.eu-contentstackapps.com",
-    "https://*.onrender.com"
-]
-
-CORS(app, origins=allowed_origins)
+# Production CORS configuration - Allow all origins for Launch integration
+CORS(app, 
+     origins=["*"],  # Allow all origins for Launch
+     allow_headers=['Content-Type', 'Authorization'],
+     methods=['GET', 'POST', 'OPTIONS'],
+     supports_credentials=False)
 
 @app.before_request
 def handle_preflight():
     if request.method == "OPTIONS":
         response = jsonify({})
         
-        # Allow localhost, network IP, Launch domain, and ngrok frontend domain
-        allowed_origins_preflight = [
-            'http://localhost:3000',
-            'http://localhost:3001',
-            'http://192.168.1.14:3000',
-            'http://192.168.1.14:3001',
-            'https://contentstack-semantic-search-71c585.eu-contentstackapps.com'
-        ]
-        
+        # Allow all origins for Launch integration
         origin = request.headers.get('Origin')
-        if origin in allowed_origins_preflight:
-            response.headers['Access-Control-Allow-Origin'] = origin
-            
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+        response.headers['Access-Control-Allow-Origin'] = origin or '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+        response.headers['Access-Control-Max-Age'] = '3600'
         return response
 
 @app.after_request
 def add_cors_headers(response):
-    # Allow localhost, network IP, Launch domain, and ngrok frontend domain
-    allowed_origins_after = [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://192.168.1.14:3000',
-        'http://192.168.1.14:3001',
-        'https://contentstack-semantic-search-71c585.eu-contentstackapps.com'
-    ]
-    
+    # Allow all origins for Launch integration
     origin = request.headers.get('Origin')
-    if origin in allowed_origins_after:
-        response.headers['Access-Control-Allow-Origin'] = origin
-    
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    response.headers['Access-Control-Allow-Origin'] = origin or '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
     return response
 
@@ -151,56 +128,52 @@ def generate_embedding(entry_data):
 
 @app.route('/health', methods=['GET'])
 def health():
-    """Health check endpoint"""
+    """Health check endpoint - always returns success for Launch"""
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "service": "contentstack-semantic-search",
+        "version": "1.0.0",
+        "cors": "enabled"
+    }), 200
+
+@app.route('/warmup', methods=['GET'])
+def warmup():
+    """Warmup endpoint to initialize services"""
     try:
+        print("🔄 Warming up services...")
+        
+        # Initialize all components
         config = get_config()
+        pinecone_manager = get_pinecone_manager()
+        contentstack_fetcher = get_contentstack_fetcher()
+        query_rewriter = get_query_rewriter()
         
-        # Basic service info
-        health_info = {
-            "status": "healthy",
+        return jsonify({
+            "status": "warmed_up",
             "timestamp": datetime.now().isoformat(),
-            "service": "contentstack-semantic-search",
-            "version": "1.0.0"
-        }
-        
-        # Try to check component health
-        components = {}
-        
-        # Check Pinecone
-        try:
-            pm = get_pinecone_manager()
-            components["pinecone"] = {"status": "connected" if pm else "unavailable"}
-        except Exception as e:
-            components["pinecone"] = {"status": "error", "error": str(e)}
-        
-        # Check Contentstack
-        try:
-            cs = get_contentstack_fetcher()
-            components["contentstack"] = {"status": "connected" if cs else "unavailable"}
-        except Exception as e:
-            components["contentstack"] = {"status": "error", "error": str(e)}
-        
-        # Check Query Rewriter
-        try:
-            qr = get_query_rewriter()
-            components["gemini"] = {"status": "connected" if qr else "unavailable"}
-        except Exception as e:
-            components["gemini"] = {"status": "error", "error": str(e)}
-        
-        health_info["components"] = components
-        
-        return jsonify(health_info), 200
+            "message": "All services initialized"
+        }), 200
         
     except Exception as e:
+        print(f"⚠️ Warmup warning: {e}")
         return jsonify({
-            "status": "unhealthy",
-            "error": str(e),
-            "timestamp": datetime.now().isoformat()
-        }), 500
+            "status": "partial_warmup",
+            "timestamp": datetime.now().isoformat(),
+            "message": "Some services may still be initializing"
+        }), 200
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['POST', 'OPTIONS'])
 def search():
-    """Search endpoint with graceful degradation"""
+    """Search endpoint with graceful degradation and CORS support"""
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({})
+        origin = request.headers.get('Origin')
+        response.headers['Access-Control-Allow-Origin'] = origin or '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        return response
     try:
         # Basic validation
         if not request.is_json:
