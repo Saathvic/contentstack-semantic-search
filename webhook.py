@@ -214,6 +214,19 @@ def webhook():
     
     return jsonify({"status": "success"}), 200
 
+@app.route('/test-post', methods=['POST'])
+def test_post():
+    """Simple test POST endpoint to debug POST request issues"""
+    try:
+        data = request.json if request.is_json else {}
+        return jsonify({
+            "status": "success",
+            "message": "POST endpoint working",
+            "received_data": data
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/search', methods=['POST'])
 def search():
     """Search endpoint for semantic product search"""
