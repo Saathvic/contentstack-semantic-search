@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS, cross_origin
-from pyngrok import ngrok
 import json
 import logging
+import os
 from datetime import datetime
 from embeddings_generator import generate_product_embedding
 from pinecone_integration import PineconeManager
@@ -68,15 +68,20 @@ def add_cors_headers(response):
     response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
     return response
-CORS(app, origins=[
+# Production CORS configuration
+allowed_origins = [
     "http://localhost:3000", 
     "http://localhost:3001", 
-    "http://192.168.1.14:3000", 
-    "http://192.168.1.14:3001", 
-    f"https://{config.NGROK_FRONTEND_DOMAIN}",
     "https://contentstack-semantic-search-71c585.eu-contentstackapps.com",
-    "https://*.eu-contentstackapps.com"
-])  # Enable CORS for React dev server and Contentstack Launch
+    "https://*.eu-contentstackapps.com",
+    "https://*.onrender.com"  # For Render deployment
+]
+
+# Add ngrok domain if available (development only)
+if hasattr(config, 'NGROK_FRONTEND_DOMAIN') and config.NGROK_FRONTEND_DOMAIN:
+    allowed_origins.append(f"https://{config.NGROK_FRONTEND_DOMAIN}")
+
+CORS(app, origins=allowed_origins)
 
 # Global managers
 _pinecone_manager = None
@@ -324,29 +329,55 @@ def health():
 #     else:
 #         return send_from_directory('contentstack-demo/build', path)
 
-if __name__ == "__main__":
-    # Start ngrok tunnel with custom domain
-    try:
-        # Configure ngrok auth token
-        ngrok.set_auth_token(config.NGROK_AUTH_TOKEN)
+if __name__ == '__main__':
+    # Initialize global managers
+    get_pinecone_manager()
+    get_query_rewriter()
+    get_contentstack_fetcher()
+    
+    # Get port from environment (Render sets this automatically)
+    port = int(os.environ.get('PORT', config.FLASK_PORT))
+    is_production = os.environ.get('FLASK_ENV') == 'production'
+    
+    if is_production:
+        logger.info("🚀 Starting Contentstack Semantic Search API (Production)...")
+        logger.info(f"🌐 Server will be available on port {port}")
+        logger.info("🔍 Search API: /search")
+        logger.info("🔄 Sync API: /sync") 
+        logger.info("🏥 Health check: /health")
+        logger.info("📡 Webhook endpoint: /webhook")
+    else:
+        logger.info("🚀 Starting Contentstack Webhook Server (Development)...")
         
-        # Establish ngrok tunnel with the specified domain
-        tunnel = ngrok.connect(config.FLASK_PORT, domain=config.NGROK_WEBHOOK_DOMAIN)
-        public_url = tunnel.public_url
-        logger.info(f"� Ngrok tunnel established: {public_url}")
-        logger.info(f"🎯 Webhook endpoint: {public_url}/webhook")
-        logger.info(f"🏥 Health check: {public_url}/health")
-        logger.info(f"� Search API: {public_url}/search")
-        logger.info(f"🔄 Sync API: {public_url}/sync")
-        
-    except Exception as e:
-        logger.error(f"❌ Failed to establish ngrok tunnel: {e}")
-        logger.info("🔄 Falling back to local development...")
-        public_url = f"http://localhost:{config.FLASK_PORT}"
-        logger.warning("⚠️ Webhooks will NOT work without ngrok tunnel!")
+        # Setup ngrok tunnel if configured (development only)
+        try:
+            from pyngrok import ngrok
+            ngrok.set_auth_token(config.NGROK_AUTH_TOKEN)
+            tunnel = ngrok.connect(port, domain=config.NGROK_WEBHOOK_DOMAIN)
+            public_url = tunnel.public_url
+            logger.info(f"🌍 Ngrok tunnel established: {public_url}")
+            logger.info(f"🎯 Webhook endpoint: {public_url}/webhook")
+            logger.info(f"🏥 Health check: {public_url}/health")
+            logger.info(f"🔍 Search API: {public_url}/search")
+            logger.info(f"🔄 Sync API: {public_url}/sync")
+        except Exception as e:
+            logger.error(f"❌ Failed to establish ngrok tunnel: {e}")
+            logger.info("🔄 Falling back to local development...")
+            logger.warning("⚠️ Webhooks will NOT work without ngrok tunnel!")
     
     try:
-        port = int(os.environ.get("PORT", config.FLASK_PORT))
-        app.run(port=port, debug=config.FLASK_DEBUG, host='0.0.0.0')
+        if is_production:
+            # In production, Gunicorn will handle the WSGI server
+            logger.info("✅ Application ready for Gunicorn")
+        
+        app.run(
+            host='0.0.0.0',
+            port=port,
+            debug=not is_production
+        )
     except KeyboardInterrupt:
-        print("Shutting down Flask app...")
+        logger.info("\n🛑 Server shutdown requested")
+    except Exception as e:
+        logger.error(f"❌ Server error: {e}")
+    finally:
+        logger.info("👋 Goodbye!")

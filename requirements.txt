@@ -22,5 +22,8 @@ google-generativeai==0.6.0
 # Ngrok Integration
 pyngrok==7.1.1
 
-# Development
+# Production Server
+gunicorn==21.2.0
+
+# Development  
 python-dotenv==1.0.0
