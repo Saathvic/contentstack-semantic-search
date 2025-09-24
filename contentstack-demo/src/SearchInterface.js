@@ -10,7 +10,7 @@ function SearchInterface() {
   const [expandedQueries, setExpandedQueries] = useState([]);
 
   // Production API URL for Launch integration
-  const API_BASE_URL = 'https://contentstack-semantic-search-0qhl.onrender.com';
+  const API_BASE_URL = 'https://contentstack-semantic-search-4wv4.onrender.com';
 
   // Warmup the backend service
   const warmupService = async () => {
