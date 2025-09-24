@@ -9,8 +9,8 @@ function SearchInterface() {
   const [error, setError] = useState('');
   const [expandedQueries, setExpandedQueries] = useState([]);
 
-  // Force localhost for development (debugging CORS)
-  const API_BASE_URL = 'http://localhost:5000';
+  // Production API URL for Launch integration
+  const API_BASE_URL = 'https://contentstack-semantic-search-0qhl.onrender.com';
 
   const handleSearch = async (e) => {
     e.preventDefault();

@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 const stackApiKey = "bltaec246e239ee5b66";
 const deliveryToken = "cs9bc546f25d43cfbc9312632d";
-const environment = "development";
+const environment = "production";
 const contentType = "product"; // replace with the actual UID
 
 const url = `https://eu-cdn.contentstack.com/v3/content_types/${contentType}/entries?environment=${environment}`;
