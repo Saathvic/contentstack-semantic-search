@@ -39,14 +39,17 @@ def handle_preflight():
     if request.method == "OPTIONS":
         response = jsonify({})
         
-        # Allow both localhost, network IP, and the ngrok frontend domain
+        # Allow localhost, network IP, Launch domain, and ngrok frontend domain
         allowed_origins = [
             'http://localhost:3000',
             'http://localhost:3001',
             'http://192.168.1.14:3000',
             'http://192.168.1.14:3001',
-            f'https://{config.NGROK_FRONTEND_DOMAIN}'
+            'https://contentstack-semantic-search-71c585.eu-contentstackapps.com',
+            f'https://{config.NGROK_FRONTEND_DOMAIN}' if hasattr(config, 'NGROK_FRONTEND_DOMAIN') and config.NGROK_FRONTEND_DOMAIN else None
         ]
+        # Remove None values
+        allowed_origins = [origin for origin in allowed_origins if origin is not None]
         
         origin = request.headers.get('Origin')
         if origin in allowed_origins:
@@ -58,14 +61,17 @@ def handle_preflight():
 
 @app.after_request
 def add_cors_headers(response):
-    # Allow both localhost, network IP, and the ngrok frontend domain
+    # Allow localhost, network IP, Launch domain, and ngrok frontend domain
     allowed_origins = [
         'http://localhost:3000',
         'http://localhost:3001',
         'http://192.168.1.14:3000',
         'http://192.168.1.14:3001',
-        f'https://{config.NGROK_FRONTEND_DOMAIN}'
+        'https://contentstack-semantic-search-71c585.eu-contentstackapps.com',
+        f'https://{config.NGROK_FRONTEND_DOMAIN}' if hasattr(config, 'NGROK_FRONTEND_DOMAIN') and config.NGROK_FRONTEND_DOMAIN else None
     ]
+    # Remove None values
+    allowed_origins = [origin for origin in allowed_origins if origin is not None]
     
     origin = request.headers.get('Origin')
     if origin in allowed_origins:
