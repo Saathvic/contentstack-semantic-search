@@ -15,15 +15,21 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('logs/webhook.log'),
-        logging.StreamHandler()
-    ]
-)
+# Setup logging for production
+def setup_logging():
+    handlers = [logging.StreamHandler()]  # Always log to console
+    
+    # Only add file handler if logs directory exists (local development)
+    if os.path.exists('logs'):
+        handlers.append(logging.FileHandler('logs/webhook.log'))
+    
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        handlers=handlers
+    )
+
+setup_logging()
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
